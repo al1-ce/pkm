@@ -1,0 +1,2 @@
+# pkm
+Simple Yay wrapper
