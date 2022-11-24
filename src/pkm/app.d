@@ -31,7 +31,7 @@ import sily.getopt;
 // stats | yay -Ps
 // pkgbuild | yay -G term | yay -Gp term
 
-private const string _version = "pkm v1.1.0";
+private const string _version = "pkm v1.1.1";
 
 string fixPath(string path) { return path.buildNormalizedPath.expandTilde.absolutePath; }
 
