@@ -32,7 +32,7 @@ Not implemented yet
 
 1. Fetch package with `dub fetch pkm`
 2. Run with `dub run pkm -b release -- [args...]`
-3. Build and install into `/usr/bin` with `dub build -b release -c install`
+3. Build and install into `/usr/bin` with `dub build pkm -b release -c install`
 
 ## Commands
 
