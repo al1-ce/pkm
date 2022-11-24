@@ -26,8 +26,8 @@ private auto reg = regex(
         r"(?:\s\((Orphaned)\))?(?:\s\(Out-of-date:\s(.*?)\))?" ~ 
         r"(?:\s\((Installed)(?:\:\s(.*?))?\))?(?:\s{6}|\s{5})(.*)(?:\r|\n|\z)", "gm");
 
-int search(string[] terms, bool color) {
-    string yay = "/usr/bin/yay";
+int search(string yay, string[] terms, bool color) {
+    // string yay = "/usr/bin/yay";
     string tmpFile = tempDir ~ "/" ~ "pkm-yay-search-output.txt";
     tmpFile = tmpFile.buildNormalizedPath.absolutePath;
 

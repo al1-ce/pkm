@@ -1,6 +1,6 @@
 import std.stdio;
 import std.getopt;
-import std.array: popFront, join;
+import std.array: popFront, join, popBack;
 import std.process: execute, environment, executeShell, spawnProcess, wait;
 import std.algorithm: canFind;
 import std.file: readText, tempDir, remove, exists;
@@ -104,14 +104,17 @@ int main(string[] args) {
         processOut.close();
         string _out = tmpFile.readText();
         remove(tmpFile);
+        _out.popBack();
 
         if (_out.canFind("which: no yay in")) {
             writeln("Error: cannot find yay.");
             return 1;
         } else {
-            yay = _out;
+            yay = _out.fixPath;
         }
     }
+
+    // writeln(yay);
 
     string[] ops = args.dup;
     ops.popFront(); // removes [0] command
@@ -126,7 +129,7 @@ int main(string[] args) {
             if (conf.yaysearch) {
                 return wait(spawnProcess([yay, "-Ss"] ~ ops));
             } else {
-                return search(ops, conf.color);
+                return search(yay, ops, conf.color);
             }
         case "list":
             return wait(spawnProcess([yay, "-Q"]));

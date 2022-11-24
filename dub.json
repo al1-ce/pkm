@@ -10,11 +10,18 @@
 	"license": "MIT License",
 	"name": "pkm",
 	"targetName": "pkm",
-	"targetPath": "bin/",
+	"targetPath": "./bin/",
+    "targetType": "executable",
     "configurations": [{
+        "name": "default",
+        "targetName": "pkm",
+        "targetPath": "./bin",
+        "targetType": "executable"
+    },{
         "name": "install",
         "targetName": "pkm",
-        "targetPath": "bin",
-        "postBuildCommands": ["echo Copying binary to /usr/bin && sudo mv bin/pkm /usr/bin/pkm"]
+        "targetPath": "./bin",
+        "targetType": "executable",
+        "postBuildCommands": ["echo Copying binary to /usr/bin && sudo mv ./bin/pkm /usr/bin/pkm"]
     }]
 }
