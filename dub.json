@@ -1,0 +1,14 @@
+{
+	"authors": [
+		"Alisa Lain"
+	],
+	"copyright": "Copyright © 2022, Alisa Lain",
+	"dependencies": {
+		"dyaml": "~>0.9.2"
+	},
+	"description": "Simple Yay wrapper",
+	"license": "MIT License",
+	"name": "pkm",
+	"targetName": "pkm",
+	"targetPath": "bin"
+}
