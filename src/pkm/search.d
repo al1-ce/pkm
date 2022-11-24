@@ -26,7 +26,7 @@ private auto reg = regex(
         r"(?:\s\((Orphaned)\))?(?:\s\(Out-of-date:\s(.*?)\))?" ~ 
         r"(?:\s\((Installed)(?:\:\s(.*?))?\))?(?:\s{6}|\s{5})(.*)(?:\r|\n|\z)", "gm");
 
-int search(string[] terms) {
+int search(string[] terms, bool color) {
     string yay = "/usr/bin/yay";
     string tmpFile = tempDir ~ "/" ~ "pkm-yay-search-output.txt";
     tmpFile = tmpFile.buildNormalizedPath.absolutePath;
@@ -43,7 +43,7 @@ int search(string[] terms) {
         return pidErr;
     }
 
-    printPackages(tmpFile, terms);
+    printPackages(tmpFile, terms, color);
 
     remove(tmpFile);
     
@@ -55,7 +55,7 @@ int search(string[] terms) {
 // repo/name version (size|aur-votes) [group]? (orphaned) 
 //  7           8           9             10   
 // (outofdate) (installed: (version)) \n (description)
-void printPackages(string tmpFile, string[] searchTerms) {
+void printPackages(string tmpFile, string[] searchTerms, bool color) {
     string contents = readText(tmpFile);
 
     Pkg[] pkgs = [];
@@ -98,19 +98,19 @@ void printPackages(string tmpFile, string[] searchTerms) {
     })(pkgs);
 
     foreach (pkg; pkgs) {
-        printPackage(pkg);
+        printPackage(pkg, color);
     }
 }
 
-void printPackage(Pkg pkg) {
+void printPackage(Pkg pkg, bool color) {
     // if (!(pkg.isOrphaned || pkg.isInstalled || pkg.isOutdated)) return;
     winsize w;
     ioctl(0, TIOCGWINSZ, &w);
     int terminalWidth = w.ws_col;
 
-    string installstr = "[i]";
-    string orphanedstr = "[a]";
-    string outdatedstr = "[o]";
+    string installstr = color || pkg.isInstalled ? "[i]" : "[ ]";
+    string orphanedstr = color || pkg.isOrphaned ? "[a]" : "[ ]";
+    string outdatedstr = color || pkg.isOutdated ? "[o]" : "[ ]";
     ulong flagsLength = installstr.length + orphanedstr.length + outdatedstr.length + 2;
     
     ulong installPos = 1;
@@ -122,37 +122,37 @@ void printPackage(Pkg pkg) {
     write(' '.repeat(installPos));
 
     if (pkg.isOrphaned) {
-        write(FG.ltred ~ orphanedstr ~ FG.reset);
+        writecol(FG.ltred, color,orphanedstr);
     } else {
         // write(' '.repeat(orphanedstr.length));
-        write(FG.dkgray ~ orphanedstr ~ FG.reset);
+        writecol(FG.dkgray, color, orphanedstr);
     }
 
     write(' ');
 
     if (pkg.isOutdated) {
-        write(FG.ltred ~ outdatedstr ~ FG.reset);
+        writecol(FG.ltred, color, outdatedstr);
     } else {
         // write(' '.repeat(outdatedstr.length));
-        write(FG.dkgray ~ outdatedstr ~ FG.reset);
+        writecol(FG.dkgray, color, outdatedstr);
     }
 
     write(' ');
 
     if (pkg.isInstalled) {
-        write(FG.ltgreen ~ installstr ~ FG.reset);
+        writecol(FG.ltgreen, color, installstr);
     } else {
         // write(' '.repeat(installstr.length));
-        write(FG.dkgray ~ installstr ~ FG.reset);
+        writecol(FG.dkgray, color, installstr);
     }
 
     write(' ');
 
-    ulong verlen = pkg.installedVersion != "" ? pkg.installedVersion.length : pkg.ver.length;
+    ulong verlen = pkg.installedVersion != "" ? pkg.installedVersion.length + (color ? 0 : 1) : pkg.ver.length;
     if (pkg.installedVersion != "") {
-        write(FG.ltmagenta ~ pkg.installedVersion ~ FG.reset);
+        writecol(FG.ltmagenta, color, (color ? "" : "@") ~ pkg.installedVersion);
     } else {
-        write(FG.cyan ~ pkg.ver ~ FG.reset);
+        writecol(FG.cyan, color, pkg.ver);
     }
 
     ulong reposize = "[aur]".length + 1;
@@ -182,34 +182,46 @@ void printPackage(Pkg pkg) {
         if (popul >= 20.0) colpop = FG.ltcyan;
         if (popul >= 30.0) colpop = FG.ltgreen;
         if (popul >= 40.0) colpop = FG.ltblue;
-        write(colvot ~ pkg.aurvotes ~ FG.reset);
+        writecol(colvot, color, pkg.aurvotes);
         write(' ');
-        write(colpop ~ pkg.aurpopul ~ FG.reset);
+        writecol(colpop, color, pkg.aurpopul);
     } else {
-        write(FG.reset ~ pkg.pkgsize ~ FG.reset);
+        writecol(FG.reset, color, pkg.pkgsize);
         write(' ');
-        write(FG.reset ~ pkg.inssize ~ FG.reset);
+        writecol(FG.reset, color, pkg.inssize);
     }
     write(' ');
 
+    FG repocol = FG.reset;
     switch (pkg.repo) {
-        case "aur": write(FG.ltblue ~ ""); break;
-        case "core": write(FG.ltyellow ~ ""); break;
-        case "extra": write(FG.ltgreen ~ ""); break;
-        case "community": write(FG.ltmagenta ~ ""); break;
+        case "aur": repocol = FG.ltblue; break;
+        case "core": repocol = FG.ltyellow; break;
+        case "extra": repocol = FG.ltgreen; break;
+        case "community": repocol = FG.ltmagenta; break;
         default: 
             if (pkg.repo.canFind("testing")) {
-                write(FG.ltred ~ "");
+                repocol = FG.ltred;
             } else {
-                write(FG.ltcyan);
+                repocol = FG.ltcyan;
             }
         break;
     }
 
-    write("[" ~ pkg.repo[0..3] ~ "]");
-    write(FG.reset ~ "");
+    writecol(repocol, color, "[" ~ pkg.repo[0..3] ~ "]");
     writeln();
     writeln("    " ~ pkg.description);
 
     // writeln();
+}
+
+void writecol(FG col, bool enabled, string args) {
+    if (enabled) {
+        write(col ~ args ~ FG.reset);
+    } else {
+        write(args);
+    }
+}
+
+void writelncol(FG col, bool enabled, string args) {
+    writecol(col, enabled, args ~ "\n");
 }

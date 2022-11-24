@@ -24,9 +24,15 @@ Compilation of this repository requires [dlang](https://dlang.org).
 1. Go to [releases](https://github.com/al1-ce/pkm/releases) and download binary.
 2. Copy downloaded binary `./bin/pkm` to somewhere in your path, for example `~/.local/bin/`
 
-<!-- ### 2.3 AUR -->
+### 2.3 AUR
 
-<!-- ### 2.4 dub -->
+Not implemented yet
+
+### 2.4 dub
+
+1. Fetch package with `dub fetch pkm`
+2. Run with `dub run pkm -b release -- [args...]`
+3. Build and install into `/usr/bin` with `dub build -b release -c install`
 
 ## Commands
 
@@ -48,7 +54,25 @@ If you want to perform any of following command only on AUR then add `--aur` or 
 | stats | Print system statistics. | `yay -Ps`
 | pkgbuild | Print PKGBUILD file | `yay -Gp [packages...]`
 
-<!-- ## Config -->
+## Config
+
+pkm can be configured with config file located at `~/.config/pkm/conf.yaml` or `~/.pkm.yaml` one at `~` takes prority.
+
+| Name | Type | Description | Default |
+| :----| :--- | :---------- | :------ |
+| yaypath | string | Custom path to yay binary. | Guessed with `which` |
+| yaysearch | bool | Disable custom pkm search. | `false` |
+| color | bool | Should search be printed in color. <br> Will not work if `yaysearch` is `true`. | `true` |
+| auronly | bool | Should yay search only AUR. | `false` |
+
+Example config:
+
+```yaml
+# conf.yaml
+yaypath: ~/.local/bin/yay
+yaysearch: yes
+auronly: yes
+```
 
 ## How to read search
 All available `pkm` commands are calling `yay` with corresponding flags. This is true for search, but pkm also performs special operations to customise and improve yay's search.
@@ -61,16 +85,17 @@ package-name  [a] [o] [i] version/installed-version  package-size/votes install-
 ```
 
 ![](readme/screenshot_special.png)
+![](readme/screenshot_special_bw.png)
 
 Here's small table to assist you in reading it:
 
 | Field | Meaning | Special notes |
 | :- | :- | :- |
 | package-name | Name of package. | | 
-| [a] | Is package orphaned. | Highlighted in red when true. "A" stands for abandoned. |
-| [a] | Is package outdated. | Highlighted in red when true. |
-| [a] | Is package installed. | Highlighted in green when true. |
-| version | Version of package. | If installed version is different from current verison then field shows installed version hightlighed in light magenta. |
+| [a] | Is package orphaned. | Highlighted in red when true. If color is disabled displayed as [ ]. "A" stands for abandoned. |
+| [o] | Is package outdated. | Highlighted in red when true. If color is disabled displayed as [ ]. |
+| [i] | Is package installed. | Highlighted in green when true. If color is disabled displayed as [ ]. |
+| version | Version of package. | If installed version is different from current verison then field shows installed version hightlighed in light magenta. If color is disabled version diff shown with `@` at start. |
 | package-size/votes | See notes. | If package from AUR: Package votes. <br> If package not from AUR: Package size. 
 | package-size/votes | See notes. | If package from AUR: Package popularity. <br> If package not from AUR: Installation size. 
 | [repo] | Repository of package. | Repository name is cropped to 3 symbols.

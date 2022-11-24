@@ -1,9 +1,13 @@
 import std.stdio;
 import std.getopt;
 import std.array: popFront, join;
-import std.process: execute, environment, executeShell, Config, spawnProcess, wait;
+import std.process: execute, environment, executeShell, spawnProcess, wait;
+import std.algorithm: canFind;
+import std.file: readText, tempDir, remove, exists;
+import std.path: buildNormalizedPath, absolutePath, expandTilde, baseName;
 
 import pkm.search;
+import pkm.config;
 
 import sily.getopt;
 
@@ -27,7 +31,9 @@ import sily.getopt;
 // stats | yay -Ps
 // pkgbuild | yay -G term | yay -Gp term
 
-private const string _version = "pkm v1.0.0";
+private const string _version = "pkm v1.1.0";
+
+string fixPath(string path) { return path.buildNormalizedPath.expandTilde.absolutePath; }
 
 int main(string[] args) {
     version(Windows) {
@@ -70,19 +76,58 @@ int main(string[] args) {
         return 0;
     }
 
-    string yay = "/usr/bin/yay";
+    string[] configPath = [
+        "~/.pkm.yaml".fixPath,
+        "~/.config/pkm/conf.yaml".fixPath,
+    ];
+    Config conf = getConfig(configPath);
+
+    string yay = "";
+    bool yayDefined = false;
+    string cyay = conf.yaypath.fixPath;
+    if (cyay != "" && (
+        (cyay.exists && cyay.baseName == "yay") ||
+        (exists(cyay ~ "/yay")))) {
+        yayDefined = true;
+        yay = cyay;
+    } else if (cyay != "") {
+        writefln("Cannot find yay in \"%s\". \nAttempting to guess yay location.", conf.yaypath);
+        yay = "/usr/bin/yay";
+    }
+
+    if (!yayDefined) {
+        string tmpFile = tempDir ~ "/" ~ "pkm-yay-path.txt";
+        tmpFile = tmpFile.buildNormalizedPath.absolutePath;
+
+        auto processOut = File(tmpFile, "w+");
+        wait(spawnProcess(["which", "yay"], std.stdio.stdin, processOut));
+        processOut.close();
+        string _out = tmpFile.readText();
+        remove(tmpFile);
+
+        if (_out.canFind("which: no yay in")) {
+            writeln("Error: cannot find yay.");
+            return 1;
+        } else {
+            yay = _out;
+        }
+    }
 
     string[] ops = args.dup;
     ops.popFront(); // removes [0] command
     ops.popFront(); // removes 'command'
     
-    if (optAur) {
+    if (optAur || conf.auronly) {
         ops ~= ["--aur"];
     }
 
     switch (args[1]) {
         case "search":
-            return search(ops);
+            if (conf.yaysearch) {
+                return wait(spawnProcess([yay, "-Ss"] ~ ops));
+            } else {
+                return search(ops, conf.color);
+            }
         case "list":
             return wait(spawnProcess([yay, "-Q"]));
         case "info":
@@ -107,7 +152,7 @@ int main(string[] args) {
         case "pkgbuild":
             return wait(spawnProcess([yay, "-Gp"] ~ ops));
         default:
-            writefln("Unknown command \"%s\".", args[1]);
-            return 1;
+            writefln("Unknown command \"%s\". Executing as is.", args[1]);
+            return wait(spawnProcess([yay] ~ ops));
     }
 }
