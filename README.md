@@ -1,6 +1,9 @@
 # pkm
 **P**ac**K**age**M**anager - Simple apt-style [yay](https://github.com/Jguer/yay) wrapper
 
+[[dub]](https://code.dlang.org/packages/pkm) | [[aur]]() | [[git]](https://github.com/al1-ce/pkm)
+| :-: | :-: | :-: |
+
 ## Description
 
 pkm is simple AUR helper intended to be used alongside with yay. It is not trying to be full replacement, but tries to improve and streamline installation/discovery sprocess.
@@ -64,6 +67,27 @@ pkm can be configured with config file located at `~/.config/pkm/conf.yaml` or `
 | yaysearch | bool | Disable custom pkm search. | `false` |
 | color | bool | Should search be printed in color. <br> Will not work if `yaysearch` is `true`. | `true` |
 | auronly | bool | Should yay search only AUR. | `false` |
+| custom | obj[] | Custom commands. | `null` |
+
+Custom commands:
+```yaml
+custom:
+    # command: [args...]
+    # args must exclude yay as 
+    # pkm will auto-supply it
+    # 
+    # also args must be split
+    # by space, so avoid
+    # spaces inside one argument
+    # votecool: -Wv "my thing"
+    # as it will be split as 
+    # ['-Wv', '"my', 'thing"']
+    updupg: -Syu
+    vote: -Wv
+    unvote: -Wu
+    gendb: -Y --gendb
+    installyay: -S yay
+```
 
 Example config:
 
@@ -72,6 +96,10 @@ Example config:
 yaypath: ~/.local/bin/yay
 yaysearch: yes
 auronly: yes
+custom:
+    updupg: -Syu
+    vote: -Wv
+    unvote: -Wu
 ```
 
 ## How to read search

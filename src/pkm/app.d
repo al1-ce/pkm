@@ -1,10 +1,10 @@
 import std.stdio;
 import std.getopt;
-import std.array: popFront, join, popBack;
-import std.process: execute, environment, executeShell, spawnProcess, wait;
-import std.algorithm: canFind;
-import std.file: readText, tempDir, remove, exists;
-import std.path: buildNormalizedPath, absolutePath, expandTilde, baseName;
+import std.array : popFront, join, popBack;
+import std.process : execute, environment, executeShell, spawnProcess, wait;
+import std.algorithm : canFind, countUntil;
+import std.file : readText, tempDir, remove, exists;
+import std.path : buildNormalizedPath, absolutePath, expandTilde, baseName;
 
 import pkm.search;
 import pkm.config;
@@ -31,16 +31,18 @@ import sily.getopt;
 // stats | yay -Ps
 // pkgbuild | yay -G term | yay -Gp term
 
-private const string _version = "pkm v1.1.1";
+private const string _version = "pkm v1.1.3";
 
-string fixPath(string path) { return path.buildNormalizedPath.expandTilde.absolutePath; }
+string fixPath(string path) {
+    return path.buildNormalizedPath.expandTilde.absolutePath;
+}
 
 int main(string[] args) {
-    version(Windows) {
+    version (Windows) {
         writefln("Unable to run on windows.");
         return 1;
     }
-    
+
     bool optVersion = false;
     bool optAur = false;
 
@@ -49,7 +51,7 @@ int main(string[] args) {
         config.bundling, config.passThrough,
         "version", "print version", &optVersion,
         "aur|a", "search only aur", &optAur
-        );
+    );
 
     Commands[] coms = [
         Commands("search", "[option] <package(s)>"),
@@ -86,8 +88,8 @@ int main(string[] args) {
     bool yayDefined = false;
     string cyay = conf.yaypath.fixPath;
     if (cyay != "" && (
-        (cyay.exists && cyay.baseName == "yay") ||
-        (exists(cyay ~ "/yay")))) {
+            (cyay.exists && cyay.baseName == "yay") ||
+            (exists(cyay ~ "/yay")))) {
         yayDefined = true;
         yay = cyay;
     } else if (cyay != "") {
@@ -119,7 +121,7 @@ int main(string[] args) {
     string[] ops = args.dup;
     ops.popFront(); // removes [0] command
     ops.popFront(); // removes 'command'
-    
+
     if (optAur || conf.auronly) {
         ops ~= ["--aur"];
     }
@@ -155,7 +157,12 @@ int main(string[] args) {
         case "pkgbuild":
             return wait(spawnProcess([yay, "-Gp"] ~ ops));
         default:
-            writefln("Unknown command \"%s\". Executing as is.", args[1]);
-            return wait(spawnProcess([yay] ~ ops));
+            if (conf.custom.canFind(args[1])) {
+                ulong argspos = conf.custom.countUntil(args[1]);
+                return wait(spawnProcess([yay] ~ conf.args[argspos] ~ ops));
+            } else {
+                writefln("Unknown command \"%s\". Executing as is.", args[1]);
+                return wait(spawnProcess([yay] ~ ops));
+            }
     }
 }
