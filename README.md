@@ -1,7 +1,7 @@
 # pkm
 **P**ac**K**age**M**anager - Simple apt-style [yay](https://github.com/Jguer/yay) wrapper
 
-[[dub]](https://code.dlang.org/packages/pkm) | [[aur]]() | [[git]](https://github.com/al1-ce/pkm)
+[[dub]](https://code.dlang.org/packages/pkm) | [[aur]](https://archlinux.org/packages/community/x86_64/pkm/) | [[git]](https://github.com/al1-ce/pkm)
 | :-: | :-: | :-: |
 
 ## Description
@@ -29,13 +29,13 @@ Compilation of this repository requires [dlang](https://dlang.org).
 
 ### 2.3 AUR
 
-Not implemented yet
+1. Install with any package manager of your choice. Assuming you have `yay` install with `yay -Syu pkm`
 
 ### 2.4 dub
 
 1. Fetch package with `dub fetch pkm`
 2. Run with `dub run pkm -b release -- [args...]`
-3. Build and install into `/usr/bin` with `dub build -b release -c install`
+3. Build and install into `/usr/bin` with `dub build pkm -b release -c install`
 
 ## Commands
 
