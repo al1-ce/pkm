@@ -1,7 +1,7 @@
 # pkm
 **P**ac**K**age**M**anager - Simple apt-style [yay](https://github.com/Jguer/yay) wrapper
 
-[[dub]](https://code.dlang.org/packages/pkm) | [[aur]](https://archlinux.org/packages/community/x86_64/pkm/) | [[git]](https://github.com/al1-ce/pkm)
+[[dub]](https://code.dlang.org/packages/pkm) | [[aur]](https://aur.archlinux.org/packages/pkm) | [[git]](https://github.com/al1-ce/pkm)
 | :-: | :-: | :-: |
 
 ## Description
