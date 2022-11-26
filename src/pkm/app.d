@@ -31,7 +31,7 @@ import pkm.getopt;
 // stats | yay -Ps
 // pkgbuild | yay -G term | yay -Gp term
 
-private const string _version = "pkm v1.1.3";
+private const string _version = "pkm v1.1.4";
 
 string fixPath(string path) {
     return path.buildNormalizedPath.expandTilde.absolutePath;
