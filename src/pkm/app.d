@@ -8,8 +8,8 @@ import std.path : buildNormalizedPath, absolutePath, expandTilde, baseName;
 
 import pkm.search;
 import pkm.config;
+import pkm.getopt;
 
-import sily.getopt;
 
 // --aur -a
 // --no-aur
@@ -53,6 +53,12 @@ int main(string[] args) {
         "aur|a", "search only aur", &optAur
     );
 
+    string[] configPath = [
+        "~/.pkm.yaml".fixPath,
+        "~/.config/pkm/conf.yaml".fixPath,
+    ];
+    Config conf = getConfig(configPath);
+
     Commands[] coms = [
         Commands("search", "[option] <package(s)>"),
         Commands("list", "[option]"),
@@ -64,8 +70,6 @@ int main(string[] args) {
         Commands("update", "[option] <package(s)>"),
         Commands("upgrade", "[option] <package(s)>"),
         Commands("clean", "[option]"),
-        Commands("stats", "[option]"),
-        Commands("pkgbuild", "[option] <package(s)>"),
     ];
 
     if (optVersion) {
@@ -74,15 +78,9 @@ int main(string[] args) {
     }
 
     if (help.helpWanted || args.length == 1) {
-        printGetopt("", "pkm <operation> [...]", coms, help.options);
+        printGetopt("", "pkm <operation> [...]", coms, help.options, conf.custom, conf.args);
         return 0;
     }
-
-    string[] configPath = [
-        "~/.pkm.yaml".fixPath,
-        "~/.config/pkm/conf.yaml".fixPath,
-    ];
-    Config conf = getConfig(configPath);
 
     string yay = "";
     bool yayDefined = false;
@@ -152,10 +150,6 @@ int main(string[] args) {
             return wait(spawnProcess([yay, "-Su"] ~ ops));
         case "clean":
             return wait(spawnProcess([yay, "-Yc"]));
-        case "stats":
-            return wait(spawnProcess([yay, "-Ps"]));
-        case "pkgbuild":
-            return wait(spawnProcess([yay, "-Gp"] ~ ops));
         default:
             if (conf.custom.canFind(args[1])) {
                 ulong argspos = conf.custom.countUntil(args[1]);

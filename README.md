@@ -19,7 +19,7 @@ All pkm commands are simply yay commands, wrapped in apt/pamac ux, which are dis
 ### 2.1 Source
 Compilation of this repository requires [dlang](https://dlang.org).
 
-1. Clone [this repo](https://github.com/al1-ce/pkm) and build it with `dub build -b release`.
+1. Clone [this repo](https://github.com/al1-ce/pkm) and build it with `dub build -b release`
 2. Copy created binary `./bin/pkm` to somewhere in your path, for example `~/.local/bin/`
 
 ### 2.2 Binary
@@ -34,8 +34,7 @@ Compilation of this repository requires [dlang](https://dlang.org).
 ### 2.4 dub
 
 1. Fetch package with `dub fetch pkm`
-2. Run with `dub run pkm -b release -- [args...]`
-3. Build and install into `/usr/bin` with `dub build pkm -b release -c install`
+2. Build and install into `/usr/bin` with `dub build pkm -b release -c install`
 
 ## Commands
 
@@ -54,12 +53,10 @@ If you want to perform any of following command only on AUR then add `--aur` or 
 | update | Update repositories. | `yay -Sy [packages...]`
 | upgrade | Upgrade installed packages. | `yay -Su [packages...]`
 | clean | Clean unneeded dependencies. | `yay -Yc`
-| stats | Print system statistics. | `yay -Ps`
-| pkgbuild | Print PKGBUILD file | `yay -Gp [packages...]`
 
 ## Config
 
-pkm can be configured with config file located at `~/.config/pkm/conf.yaml` or `~/.pkm.yaml` one at `~` takes prority.
+pkm can be configured with config file located at `~/.config/pkm/conf.yaml` or `~/.pkm.yaml`, one at `~` takes prority.
 
 | Name | Type | Description | Default |
 | :----| :--- | :---------- | :------ |
@@ -132,6 +129,22 @@ Here's small table to assist you in reading it:
 If package is from AUR then it's displaying votes/popularity instead of size and votes/popularity are highlighted in this way:
 
 ![](readme/votes.png)
+
+## FAQ
+
+- ### No color anywhere except search
+    See [yay faq](https://github.com/Jguer/yay#frequently-asked-questions)
+
+- ### My config
+    ```yaml
+    # ~/.config/pkm/conf.yaml
+    custom:
+        updupg: -Syu
+        stats: -Ps
+        pkgbuild: -Gp
+        vote: -Wv
+        unvote: -Wu
+    ```
 
 ### Other AUR helpers/tools
 - [yay](https://github.com/Jguer/yay) 
