@@ -1,8 +1,11 @@
 # pkm
 **P**ac**K**age**M**anager - Simple apt-style [yay](https://github.com/Jguer/yay) wrapper
 
-[[dub]](https://code.dlang.org/packages/pkm) | [[aur]](https://aur.archlinux.org/packages/pkm) | [[git]](https://github.com/al1-ce/pkm)
-| :-: | :-: | :-: |
+[![aur](https://img.shields.io/aur/version/pkm.svg?style=for-the-badge&logo=archlinux)](https://aur.archlinux.org/packages/pkm) 
+[![dub](https://img.shields.io/dub/v/pkm.svg?style=for-the-badge&logo=d)](https://code.dlang.org/packages/pkm) 
+[![git](https://img.shields.io/github/v/release/al1-ce/pkm?label=GIT&logo=github&style=for-the-badge)](https://github.com/al1-ce/pkm)
+![license](https://img.shields.io/aur/license/pkm.svg?style=for-the-badge)
+![aur votes](https://img.shields.io/aur/votes/pkm.svg?style=for-the-badge) 
 
 ## Description
 
