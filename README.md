@@ -28,7 +28,7 @@ Compilation of this repository requires [dlang](https://dlang.org).
 ### 2.2 Binary
 
 1. Go to [releases](https://github.com/al1-ce/pkm/releases) and download binary.
-2. Copy downloaded binary `./bin/pkm` to somewhere in your path, for example `~/.local/bin/`
+2. Copy downloaded binary `.pkm` to somewhere in your path, for example `~/.local/bin/`
 
 ### 2.3 AUR
 
