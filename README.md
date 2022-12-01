@@ -7,6 +7,10 @@
 ![license](https://img.shields.io/aur/license/pkm.svg?style=for-the-badge)
 ![aur votes](https://img.shields.io/aur/votes/pkm.svg?style=for-the-badge) 
 
+<!--
+[![Packaging status](https://repology.org/badge/vertical-allrepos/pkm.svg)](https://repology.org/project/pkm/versions)
+-->
+
 ## Description
 
 pkm is simple AUR helper intended to be used alongside with yay. It is not trying to be full replacement, but tries to improve and streamline installation/discovery sprocess.
@@ -28,7 +32,7 @@ Compilation of this repository requires [dlang](https://dlang.org).
 ### 2.2 Binary
 
 1. Go to [releases](https://github.com/al1-ce/pkm/releases) and download binary.
-2. Copy downloaded binary `.pkm` to somewhere in your path, for example `~/.local/bin/`
+2. Copy downloaded binary `pkm` to somewhere in your path, for example `~/.local/bin/`
 
 ### 2.3 AUR
 
