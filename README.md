@@ -24,10 +24,6 @@
 
 <!-- [![Packaging status](https://repology.org/badge/vertical-allrepos/pkm.svg)](https://repology.org/project/pkm/versions) -->
 
-<!--
-[![Packaging status](https://repology.org/badge/vertical-allrepos/pkm.svg)](https://repology.org/project/pkm/versions)
--->
-
 ## Description
 
 pkm is simple AUR helper intended to be used alongside with yay. It is not trying to be full replacement, but tries to improve and streamline installation/discovery sprocess.
@@ -45,6 +41,7 @@ Compilation of this repository requires [dlang](https://dlang.org).
 
 1. Clone [this repo](https://github.com/al1-ce/pkm) and build it with `dub build -b release`
 2. Copy created binary `./bin/pkm` to somewhere in your path, for example `~/.local/bin/`
+3. Or build project with `dub build pkm -b release -c install` to automatically move compiled binary into `/usr/bin`
 
 ### 2.2 Binary
 
