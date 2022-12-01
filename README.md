@@ -1,11 +1,28 @@
 # pkm
 **P**ac**K**age**M**anager - Simple apt-style [yay](https://github.com/Jguer/yay) wrapper
 
-[![aur](https://img.shields.io/aur/version/pkm.svg?style=for-the-badge&logo=archlinux)](https://aur.archlinux.org/packages/pkm) 
+<!-- Uncomment when shelds going to add dub score -->
+<!-- [![aur](https://img.shields.io/aur/version/pkm.svg?style=for-the-badge&logo=archlinux)](https://aur.archlinux.org/packages/pkm) 
 [![dub](https://img.shields.io/dub/v/pkm.svg?style=for-the-badge&logo=d)](https://code.dlang.org/packages/pkm) 
 [![git](https://img.shields.io/github/v/release/al1-ce/pkm?label=GIT&logo=github&style=for-the-badge)](https://github.com/al1-ce/pkm)
 ![license](https://img.shields.io/aur/license/pkm.svg?style=for-the-badge)
-![aur votes](https://img.shields.io/aur/votes/pkm.svg?style=for-the-badge) 
+![aur votes](https://img.shields.io/aur/votes/pkm.svg?style=for-the-badge)  -->
+<!-- Custom score badge, doesnt really work coz it shows 0.700090412 etc -->
+<!-- ![](https://img.shields.io/badge/dynamic/json?color=blue&label=SCORE&query=%24.score&url=https%3A%2F%2Fcode.dlang.org%2Fapi%2Fpackages%2Fpkm%2Fstats&style=for-the-badge) -->
+
+[![aur](https://img.shields.io/aur/version/pkm.svg?logo=archlinux&style=flat-square&logoColor=white)](https://aur.archlinux.org/packages/pkm) 
+[![dub](https://img.shields.io/dub/v/pkm.svg?logo=d&style=flat-square)](https://code.dlang.org/packages/pkm) 
+[![git](https://img.shields.io/github/v/release/al1-ce/pkm?label=git&logo=github&style=flat-square)](https://github.com/al1-ce/pkm)
+![license](https://img.shields.io/aur/license/pkm.svg?style=flat-square)
+![aur votes](https://img.shields.io/aur/votes/pkm.svg?style=flat-square) 
+![dub rating](https://badgen.net/dub/rating/pkm?style=flat)
+![dub rating](https://badgen.net/github/stars/al1-ce/pkm?style=flat)
+![](https://img.shields.io/badge/status-⠀-success?style=flat-square)
+<!-- ![](https://img.shields.io/badge/status-⠀-important?style=flat-square) -->
+<!-- ![](https://img.shields.io/badge/status-⠀-critical?style=flat-square) -->
+<!-- Cool status badge idk. Uncommentt current one -->
+
+<!-- [![Packaging status](https://repology.org/badge/vertical-allrepos/pkm.svg)](https://repology.org/project/pkm/versions) -->
 
 <!--
 [![Packaging status](https://repology.org/badge/vertical-allrepos/pkm.svg)](https://repology.org/project/pkm/versions)
