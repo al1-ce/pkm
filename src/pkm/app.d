@@ -179,7 +179,7 @@ int main(string[] args) {
             if (conf.yaysearch) {
                 return wait(spawnProcess([yay, "-Ss"] ~ ops));
             } else {
-                return search(yay, ops, conf.color, conf.separate, conf.separator);
+                return search(yay, ops, conf);
             }
         case "list":
             return wait(spawnProcess([yay, "-Q"]));

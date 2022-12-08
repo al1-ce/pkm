@@ -86,6 +86,7 @@ pkm can be configured with config file located at `~/.config/pkm/conf.yaml`, `~/
 | color | bool | Sets if search will be printed with colors. <br> Will not work if `yaysearch` is `true`. | `true` |
 | separate | bool | Separates search results with separator. <br> Will not work if `yaysearch` is `true`. | `false` |
 | separator | string | Sets separator for `separate` option. If it's unicode escape sequence then it must be wrapped in `"` | `"\u2500"` |
+| separator-color | string | Sets formatting for `separate` option. Must be set with `\e` as escape symbol | `\e[90m` |
 | auronly | bool | Should yay search only AUR. | `false` |
 | managers | string[] | Defines custom managers. | `[ ]` |
 | custom | string[] | Custom commands. | `[ ]` |
@@ -217,30 +218,28 @@ If package is from AUR then it's displaying votes/popularity instead of size and
     See [yay faq](https://github.com/Jguer/yay#frequently-asked-questions)
 
 - ### My config
-    ```yaml
-    # ~/.config/pkm/conf.yaml
-    managers:
-    aura: /usr/bin/aura
-    pacman: /usr/bin/pacman
-    pamac: /usr/bin/pamac
-    custom:
-        updupg: -Syu
-        stats: -Ps
-        pkgbuild: -Gp
-        vote: -Wv
-        unvote: -Wu
-        sysupdate: pacman -Syu
-    alias:
-        # alias: name
-        i: install
-        s: search
-        r: remove
-        b: pkgbuild
-        u: updupg
-        I: info
-    separate: yes
-    separator: "\u2500"
-    ```
+```yaml
+# ~/.config/pkm/conf.yaml
+managers:
+pacman: /usr/bin/pacman
+custom:
+    updupg: -Syu
+    stats: -Ps
+    pkgbuild: -Gp
+    vote: -Wv
+    unvote: -Wu
+    sysupdate: pacman -Syu
+alias:
+    i: install
+    s: search
+    r: remove
+    b: pkgbuild
+    u: updupg
+    I: info
+separate: yes
+separator: "\u2500"
+separator-color: "\e[38;5;237m"
+```
 
 ### Other AUR helpers/tools
 - [yay](https://github.com/Jguer/yay) 

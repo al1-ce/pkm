@@ -40,6 +40,7 @@ Config __getConfig(string configPath) {
     root.getKey!bool(&conf.color, "color");
     root.getKey!bool(&conf.auronly, "auronly");
     root.getKey!string(&conf.separator, "separator");
+    root.getKey!string(&conf.separator_color, "separator-color");
     root.getKey!bool(&conf.separate, "separate");
 
     if (root.hasKeyType!(NodeType.mapping)("custom")) {
@@ -93,6 +94,7 @@ struct Config {
     bool auronly = false;
     bool separate = false;
     string separator = "\u2500";
+    string separator_color = "\033[90m";
     string[] custom = [];
     string[][] args = []; 
     string[string] aliases;

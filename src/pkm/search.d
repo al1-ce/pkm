@@ -16,6 +16,7 @@ import sily.bashfmt;
 import sily.path: fixPath;
 
 import pkm.pkg;
+import pkm.config: SearchConfig = Config;
 
 // yay regex:
 // (.*?)\/(.*?)\s(.*?)\s\((.*?)\)(?:\s\[(.*)\])?(?:\s\((Orphaned)\))?(?:\s\(Out-of-date:\s(.*?)\))?(?:\s\((Installed)(?:\:\s(.*?))?\))?(?:\s{6}|\s{5})(.*)(?:\r|\n|\z)
@@ -26,7 +27,7 @@ private auto reg = regex(
         r"(?:\s\((Orphaned)\))?(?:\s\(Out-of-date:\s(.*?)\))?" ~ 
         r"(?:\s\((Installed)(?:\:\s(.*?))?\))?(?:\s{6}|\s{5})(.*)(?:\r|\n|\z)", "gm");
 
-int search(string yay, string[] terms, bool color, bool separate, string separator) {
+int search(string yay, string[] terms, SearchConfig conf) {
     // string yay = "/usr/bin/yay";
     string tmpFile = tempDir ~ "/" ~ "pkm-yay-search-output.txt";
     tmpFile = tmpFile.fixPath;
@@ -43,7 +44,7 @@ int search(string yay, string[] terms, bool color, bool separate, string separat
         return pidErr;
     }
 
-    printPackages(tmpFile, terms, color, separate, separator);
+    printPackages(tmpFile, terms, conf);
 
     remove(tmpFile);
     
@@ -55,7 +56,7 @@ int search(string yay, string[] terms, bool color, bool separate, string separat
 // repo/name version (size|aur-votes) [group]? (orphaned) 
 //  7           8           9             10   
 // (outofdate) (installed: (version)) \n (description)
-void printPackages(string tmpFile, string[] searchTerms, bool color, bool separate, string separator) {
+void printPackages(string tmpFile, string[] searchTerms, SearchConfig conf) {
     string contents = readText(tmpFile);
 
     Pkg[] pkgs = [];
@@ -105,10 +106,14 @@ void printPackages(string tmpFile, string[] searchTerms, bool color, bool separa
     })(pkgs);
 
     foreach (pkg; pkgs) {
-        if (separate && print_) {
-            writeln(repeat(separator.to!dstring, terminalWidth).join);
+        if (conf.separate && print_) {
+            if (conf.color) {
+                writeln(conf.separator_color, repeat(conf.separator.to!dstring, terminalWidth).join, "\033[m");
+            } else {
+                writeln(repeat(conf.separator.to!dstring, terminalWidth).join);
+            }
         }
-        printPackage(pkg, color);
+        printPackage(pkg, conf.color);
         if (!print_) print_ = true;
     }
 
