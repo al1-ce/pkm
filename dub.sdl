@@ -1,0 +1,22 @@
+name "pkm"
+description "Simple Yay wrapper"
+authors "Alisa Lain"
+copyright "Copyright © 2022, Alisa Lain"
+license "MIT License"
+dependency "sily" version="~>1.2.6"
+dependency "sily:dyaml" version="~>1.2.6"
+dependency "dyaml" version="~>0.9.2"
+targetType "executable"
+targetPath "./bin/"
+targetName "pkm"
+configuration "default" {
+	targetType "executable"
+	targetPath "./bin"
+	targetName "pkm"
+}
+configuration "install" {
+	targetType "executable"
+	targetPath "./bin"
+	targetName "pkm"
+	postBuildCommands "echo Copying binary to /usr/bin && sudo mv ./bin/pkm /usr/bin/pkm"
+}

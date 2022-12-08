@@ -5,17 +5,17 @@ import std.file: tempDir, remove, readText;
 // import std.file;
 import std.stdio;
 import std.regex;
-import std.path: buildNormalizedPath, absolutePath;
-import std.array: split;
+import std.array: split, join;
 import std.conv: to;
 import std.range: repeat;
 import std.algorithm: canFind, sort;
 import std.numeric: gapWeightedSimilarityNormalized;
 
-import core.sys.posix.sys.ioctl;
+import sily.terminal: terminalWidth;
+import sily.bashfmt;
+import sily.path: fixPath;
 
 import pkm.pkg;
-import sily.bashfmt;
 
 // yay regex:
 // (.*?)\/(.*?)\s(.*?)\s\((.*?)\)(?:\s\[(.*)\])?(?:\s\((Orphaned)\))?(?:\s\(Out-of-date:\s(.*?)\))?(?:\s\((Installed)(?:\:\s(.*?))?\))?(?:\s{6}|\s{5})(.*)(?:\r|\n|\z)
@@ -26,10 +26,10 @@ private auto reg = regex(
         r"(?:\s\((Orphaned)\))?(?:\s\(Out-of-date:\s(.*?)\))?" ~ 
         r"(?:\s\((Installed)(?:\:\s(.*?))?\))?(?:\s{6}|\s{5})(.*)(?:\r|\n|\z)", "gm");
 
-int search(string yay, string[] terms, bool color) {
+int search(string yay, string[] terms, bool color, bool separate, string separator) {
     // string yay = "/usr/bin/yay";
     string tmpFile = tempDir ~ "/" ~ "pkm-yay-search-output.txt";
-    tmpFile = tmpFile.buildNormalizedPath.absolutePath;
+    tmpFile = tmpFile.fixPath;
 
     auto processOut = File(tmpFile, "w+");
 
@@ -43,7 +43,7 @@ int search(string yay, string[] terms, bool color) {
         return pidErr;
     }
 
-    printPackages(tmpFile, terms, color);
+    printPackages(tmpFile, terms, color, separate, separator);
 
     remove(tmpFile);
     
@@ -55,14 +55,21 @@ int search(string yay, string[] terms, bool color) {
 // repo/name version (size|aur-votes) [group]? (orphaned) 
 //  7           8           9             10   
 // (outofdate) (installed: (version)) \n (description)
-void printPackages(string tmpFile, string[] searchTerms, bool color) {
+void printPackages(string tmpFile, string[] searchTerms, bool color, bool separate, string separator) {
     string contents = readText(tmpFile);
 
     Pkg[] pkgs = [];
+    bool print_ = false;
 
     auto packages = matchAll(contents, reg);
 
     foreach (pkg; packages) {
+        if (pkg.length != 11) {
+            
+            writelncol(FG.ltred, true, "Error: search regex is not compatible with chosen package manager.");
+            goto noprint;
+        }
+
         string pkgsize;
         string inssize;
 
@@ -98,15 +105,19 @@ void printPackages(string tmpFile, string[] searchTerms, bool color) {
     })(pkgs);
 
     foreach (pkg; pkgs) {
+        if (separate && print_) {
+            writeln(repeat(separator.to!dstring, terminalWidth).join);
+        }
         printPackage(pkg, color);
+        if (!print_) print_ = true;
     }
+
+    noprint:
 }
 
 void printPackage(Pkg pkg, bool color) {
     // if (!(pkg.isOrphaned || pkg.isInstalled || pkg.isOutdated)) return;
-    winsize w;
-    ioctl(0, TIOCGWINSZ, &w);
-    int terminalWidth = w.ws_col;
+    int tw = terminalWidth;
 
     string installstr = color || pkg.isInstalled ? "[i]" : "[ ]";
     string orphanedstr = color || pkg.isOrphaned ? "[a]" : "[ ]";
@@ -114,8 +125,8 @@ void printPackage(Pkg pkg, bool color) {
     ulong flagsLength = installstr.length + orphanedstr.length + outdatedstr.length + 2;
     
     ulong installPos = 1;
-    if (pkg.name.length + flagsLength < terminalWidth / 2) {
-        installPos = (terminalWidth / 2) - pkg.name.length - flagsLength;
+    if (pkg.name.length + flagsLength < tw / 2) {
+        installPos = (tw / 2) - pkg.name.length - flagsLength;
     }
     write(pkg.name);
 
@@ -160,8 +171,8 @@ void printPackage(Pkg pkg, bool color) {
 
     ulong wantedlen = verlen + sizelen + 1 + reposize;
     ulong rside = 1;
-    if (wantedlen < terminalWidth / 2) {
-        rside = (terminalWidth / 2) - wantedlen;
+    if (wantedlen < tw / 2) {
+        rside = (tw / 2) - wantedlen;
     }
 
     write(' '.repeat(rside));
@@ -223,5 +234,9 @@ void writecol(FG col, bool enabled, string args) {
 }
 
 void writelncol(FG col, bool enabled, string args) {
-    writecol(col, enabled, args ~ "\n");
+    if (enabled) {
+        write(col ~ args ~ FG.reset ~ "\n");
+    } else {
+        write(args ~ "\n");
+    }
 }

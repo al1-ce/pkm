@@ -77,34 +77,90 @@ If you want to perform any of following command only on AUR then add `--aur` or 
 
 ## Config
 
-pkm can be configured with config file located at `~/.config/pkm/conf.yaml` or `~/.pkm.yaml`, one at `~` takes prority.
+pkm can be configured with config file located at `~/.config/pkm/conf.yaml`, `~/.config/pkm/pkm.yaml` or `~/.pkm.yaml`, one at `~` takes prority.
 
 | Name | Type | Description | Default |
 | :----| :--- | :---------- | :------ |
 | yaypath | string | Custom path to yay binary. | Guessed with `which` |
 | yaysearch | bool | Disable custom pkm search. | `false` |
-| color | bool | Should search be printed in color. <br> Will not work if `yaysearch` is `true`. | `true` |
+| color | bool | Sets if search will be printed with colors. <br> Will not work if `yaysearch` is `true`. | `true` |
+| separate | bool | Separates search results with separator. <br> Will not work if `yaysearch` is `true`. | `false` |
+| separator | string | Sets separator for `separate` option. If it's unicode escape sequence then it must be wrapped in `"` | `"\u2500"` |
 | auronly | bool | Should yay search only AUR. | `false` |
-| custom | obj[] | Custom commands. | `null` |
+| managers | string[] | Defines custom managers. | `[ ]` |
+| custom | string[] | Custom commands. | `[ ]` |
 
-Custom commands:
+### Using custom package manager instead of yay:
+
+You can set custom main package manager with yaypath.
+
+If you're using pacman/yay-compatible package manager then you can use it as is while only setting yaysearch to true.
 ```yaml
+yaypath: /usr/bin/pacman
+yaysearch: yes
+```
+
+In case of package managers with flags/commands not compatible with pacman/yay you can override default commands with custom commands.
+```yaml
+yaypath: /usr/bin/pamac
+yaysearch: yes
+custom:
+    # Overrides default search with pamac search and disables aur
+    search: search --no-aur
+```
+
+### Managers:
+Allows usage of custom managers such as pacman, pamac and other package managers and aur helpers.
+
+Custom managers can be used only with custom commands.
+```yaml
+managers:
+    # name: path
+    pacman: /usr/bin/pacman
+    pamac: /usr/bin/pamac
+    aura: /usr/bin/aura
+custom:
+    # If you want to use custom package manager with custom command simply supply it 
+    # as first argument
+    sysupdate: pacman -Syu
+
+```
+
+### Custom commands:
+Allows to create custom commands and overriding default commands.
+
+If first argument will match any custom defined managers then this manager will be used.
+
+If you want to override any command make sure that there's no duplicate keys in current KeyMap (i.e. `custom:`) since yaml does not allow for them.
+
+Also args must be split by space, so avoid spaces inside one argument, `votecool: -Wv "my thing"` will be split as `['-Wv', '"my', 'thing"']`.
+```yaml
+managers:
+    aura: /usr/bin/aura
+    pamac: /usr/bin/pamac
 custom:
     # command: [args...]
-    # args must exclude yay as 
-    # pkm will auto-supply it
-    # 
-    # also args must be split
-    # by space, so avoid
-    # spaces inside one argument
-    # votecool: -Wv "my thing"
-    # as it will be split as 
-    # ['-Wv', '"my', 'thing"']
+    # Args must exclude yay as pkm will auto-supply it
     updupg: -Syu
     vote: -Wv
     unvote: -Wu
     gendb: -Y --gendb
-    installyay: -S yay
+    # Uses custom package manager (in that case aura)
+    updateaur: aura -Au
+    # Overrides default serach
+    search: pamac search
+```
+
+### Aliases:
+Aliases can be either a command or custom command.
+```yaml
+alias:
+    # alias: name
+    i: install
+    s: search
+    find: search
+    # Pointing to custom command shown in previous example
+    u: unvote
 ```
 
 Example config:
@@ -118,6 +174,10 @@ custom:
     updupg: -Syu
     vote: -Wv
     unvote: -Wu
+alias:
+    i: install
+    s: search
+    r: remove
 ```
 
 ## How to read search
@@ -159,12 +219,27 @@ If package is from AUR then it's displaying votes/popularity instead of size and
 - ### My config
     ```yaml
     # ~/.config/pkm/conf.yaml
+    managers:
+    aura: /usr/bin/aura
+    pacman: /usr/bin/pacman
+    pamac: /usr/bin/pamac
     custom:
         updupg: -Syu
         stats: -Ps
         pkgbuild: -Gp
         vote: -Wv
         unvote: -Wu
+        sysupdate: pacman -Syu
+    alias:
+        # alias: name
+        i: install
+        s: search
+        r: remove
+        b: pkgbuild
+        u: updupg
+        I: info
+    separate: yes
+    separator: "\u2500"
     ```
 
 ### Other AUR helpers/tools

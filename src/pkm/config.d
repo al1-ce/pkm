@@ -2,10 +2,15 @@ module pkm.config;
 
 import std.conv: to;
 import std.file: exists;
-import std.stdio: writeln;
+import std.stdio: writeln, writefln, write;
 import std.array: split;
 
 import dyaml;
+
+import pkm.search: writelncol;
+
+import sily.bashfmt;
+import sily.dyaml;
 
 Config getConfig(string[] paths) {
     foreach (path; paths) {
@@ -21,32 +26,51 @@ Config __getConfig(string configPath) {
     try {
         root = Loader.fromFile(configPath).load();
     } catch (YAMLException e) {
-        writeln("Error: Invalid config. Using default configuration.");
+        writeln(e.msg);
+        writelncol(FG.ltred, true, "Error: Invalid config. Using default configuration.");
         return Config();
     }
 
     Config conf;
 
-    const NodeType mapping = NodeType.mapping;
-
-    if (root.type != mapping) return conf;
+    if (isType!(NodeType.mapping)(root) == false) return conf;
 
     root.getKey!string(&conf.yaypath, "yaypath");
     root.getKey!bool(&conf.yaysearch, "yaysearch");
     root.getKey!bool(&conf.color, "color");
     root.getKey!bool(&conf.auronly, "auronly");
+    root.getKey!string(&conf.separator, "separator");
+    root.getKey!bool(&conf.separate, "separate");
 
-    if (root.hasKeyType!mapping("custom")) {
+    if (root.hasKeyType!(NodeType.mapping)("custom")) {
         auto custom = root["custom"].mappingKeys;
         foreach (key; custom) {
-            if (key.type == NodeType.string) {
+            if (isType!(NodeType.string)(key)) {
                 string keyname = key.as!string;
                 conf.custom ~= keyname;
                 conf.args ~= root["custom"][keyname].as!string.split(' ');
             }
         }
-        // writeln(conf.custom);
-        // writeln(conf.args);
+    }
+
+    if (root.hasKeyType!(NodeType.mapping)("managers")) {
+        auto managers = root["managers"].mappingKeys;
+        foreach (key; managers) {
+            if (isType!(NodeType.string)(key)) {
+                string keyname = key.as!string;
+                conf.managers[keyname] = root["managers"][keyname].as!string;
+            }
+        }
+    }
+
+    if (root.hasKeyType!(NodeType.mapping)("alias")) {
+        auto aliases = root["alias"].mappingKeys;
+        foreach (key; aliases) {
+            if (isType!(NodeType.string)(key)) {
+                string keyname = key.as!string;
+                conf.aliases[keyname] = root["alias"][keyname].as!string;
+            }
+        }
     }
 
     return conf;
@@ -55,34 +79,10 @@ Config __getConfig(string configPath) {
 string configGetGlobal(string configPath, string field) {
     Node root = Loader.fromFile(configPath).load();
 
-    if (root.type != NodeType.mapping) return "";
+    if (!root.isType!(NodeType.mapping)) return "";
     if (!root.hasKeyAs!string(field)) return "";
 
     return root[field].as!string;
-}
-
-private bool hasKeyType(NodeType T)(Node node, string key) {
-    if (node.containsKey(key)) {
-        if (node[key].type == T) {
-            return true;
-        }
-    }
-    return false;
-}
-
-private bool hasKeyAs(T)(Node node, string key) {
-    if (node.containsKey(key)) {
-        if (node[key].convertsTo!T) {
-            return true;
-        }
-    }
-    return false;
-}
-
-private void getKey(T)(Node node, T* variable, string field) {
-    if (node.hasKeyAs!T(field)) {
-        *variable = node[field].as!T;
-    }
 }
 
 
@@ -91,6 +91,12 @@ struct Config {
     bool yaysearch = false;
     bool color = true;
     bool auronly = false;
+    bool separate = false;
+    string separator = "\u2500";
     string[] custom = [];
-    string[][] args = [];
+    string[][] args = []; 
+    string[string] aliases;
+    string[string] managers;
+    // TODO: overrides
+    // TODO: aliases
 }

@@ -1,14 +1,17 @@
-import std.stdio;
-import std.getopt;
+import std.stdio: writeln, writefln, stdin, File;
+import std.getopt: getopt, Option, config;
 import std.array : popFront, join, popBack;
 import std.process : execute, environment, executeShell, spawnProcess, wait;
 import std.algorithm : canFind, countUntil;
 import std.file : readText, tempDir, remove, exists;
-import std.path : buildNormalizedPath, absolutePath, expandTilde, baseName;
+import std.path : baseName;
 
 import pkm.search;
 import pkm.config;
-import pkm.getopt;
+
+import sily.getopt;
+import sily.bashfmt;
+import sily.path: fixPath;
 
 
 // --aur -a
@@ -33,13 +36,10 @@ import pkm.getopt;
 
 private const string _version = "pkm v1.1.4";
 
-string fixPath(string path) {
-    return path.buildNormalizedPath.expandTilde.absolutePath;
-}
-
 int main(string[] args) {
     version (Windows) {
-        writefln("Unable to run on windows.");
+        writelncol(FG.ltred, true, "Error: unable to run on windows.");
+        writefln("");
         return 1;
     }
 
@@ -55,21 +55,22 @@ int main(string[] args) {
 
     string[] configPath = [
         "~/.pkm.yaml".fixPath,
+        "~/.config/pkm/pkm.yaml".fixPath,
         "~/.config/pkm/conf.yaml".fixPath,
     ];
     Config conf = getConfig(configPath);
 
-    Commands[] coms = [
-        Commands("search", "[option] <package(s)>"),
-        Commands("list", "[option]"),
-        Commands("info", "[option] <package(s)>"),
-        Commands("install", "[option] <package(s)>"),
+    Option[] commands = [
+        customOption("search", "[option] <package(s)>"),
+        customOption("list", "[option]"),
+        customOption("info", "[option] <package(s)>"),
+        customOption("install", "[option] <package(s)>"),
         // Commands("reinstall", "[option] <package(s)>"),
-        Commands("remove", "[option] <package(s)>"),
-        Commands("checkupdates", "[option]"),
-        Commands("update", "[option] <package(s)>"),
-        Commands("upgrade", "[option] <package(s)>"),
-        Commands("clean", "[option]"),
+        customOption("remove", "[option] <package(s)>"),
+        customOption("checkupdates", "[option]"),
+        customOption("update", "[option] <package(s)>"),
+        customOption("upgrade", "[option] <package(s)>"),
+        customOption("clean", "[option]"),
     ];
 
     if (optVersion) {
@@ -78,36 +79,69 @@ int main(string[] args) {
     }
 
     if (help.helpWanted || args.length == 1) {
-        printGetopt("", "pkm <operation> [...]", coms, help.options, conf.custom, conf.args);
+        Option[] customArgs = [];
+        for (int i = 0; i < conf.custom.length; ++i) {
+            customArgs ~= customOption(conf.custom[i], "");
+            for (int j = 0; j < conf.args[i].length; ++j) {
+                if (j > 0) customArgs[i].help ~= " ";
+                customArgs[i].help ~= conf.args[i][j];
+            }
+        }
+        Option[] aliases = [];
+        foreach (key; conf.aliases.keys) {
+            aliases ~= customOption(key, conf.aliases[key]);
+        }
+        if (customArgs.length > 0 && aliases.length > 0) {
+            printGetopt("pkm <operation> [...]", 
+                "Options", help.options, "Commands", commands, 
+                "Custom", customArgs, "Aliases", aliases
+            );
+        } else 
+        if (customArgs.length > 0) {
+            printGetopt("pkm <operation> [...]", 
+                "Options", help.options, "Commands", commands, "Custom", customArgs
+            );
+        } else 
+        if (aliases.length > 0) {
+            printGetopt("pkm <operation> [...]", 
+                "Options", help.options, "Commands", commands, "Aliases", aliases
+            );
+        } else {
+            printGetopt("pkm <operation> [...]", 
+                "Options", help.options, "Commands", commands
+            );
+        }
         return 0;
     }
 
     string yay = "";
     bool yayDefined = false;
     string cyay = conf.yaypath.fixPath;
-    if (cyay != "" && (
-            (cyay.exists && cyay.baseName == "yay") ||
-            (exists(cyay ~ "/yay")))) {
+    if (cyay != "" && cyay.exists) {
         yayDefined = true;
         yay = cyay;
     } else if (cyay != "") {
-        writefln("Cannot find yay in \"%s\". \nAttempting to guess yay location.", conf.yaypath);
+        writelncol(
+            FG.ltred, true, 
+            "Error: cannot find package manager in \"" ~ conf.yaypath ~ "\"."
+            );
+        writefln("Attempting to guess yay location.");
         yay = "/usr/bin/yay";
     }
 
     if (!yayDefined) {
         string tmpFile = tempDir ~ "/" ~ "pkm-yay-path.txt";
-        tmpFile = tmpFile.buildNormalizedPath.absolutePath;
+        tmpFile = tmpFile.fixPath;
 
         auto processOut = File(tmpFile, "w+");
-        wait(spawnProcess(["which", "yay"], std.stdio.stdin, processOut));
+        wait(spawnProcess(["which", "yay"], stdin, processOut));
         processOut.close();
         string _out = tmpFile.readText();
         remove(tmpFile);
         _out.popBack();
 
         if (_out.canFind("which: no yay in")) {
-            writeln("Error: cannot find yay.");
+            writelncol(FG.ltred, true, "Error: cannot find yay.");
             return 1;
         } else {
             yay = _out.fixPath;
@@ -124,12 +158,28 @@ int main(string[] args) {
         ops ~= ["--aur"];
     }
 
+    if (conf.aliases.keys.canFind(args[1])) {
+        args[1] = conf.aliases[args[1]];
+    }
+
+    if (conf.custom.canFind(args[1])) {
+        ulong argspos = conf.custom.countUntil(args[1]);
+        string pkgmng = conf.args[argspos][0];
+        if (conf.managers.keys.canFind(pkgmng)) {
+            string ppath = conf.managers[pkgmng];
+            if (ppath.fixPath.exists) {
+                return wait(spawnProcess([ppath.fixPath] ~ conf.args[argspos][1..$] ~ ops));
+            }
+        }
+        return wait(spawnProcess([yay] ~ conf.args[argspos] ~ ops));
+    }
+
     switch (args[1]) {
         case "search":
             if (conf.yaysearch) {
                 return wait(spawnProcess([yay, "-Ss"] ~ ops));
             } else {
-                return search(yay, ops, conf.color);
+                return search(yay, ops, conf.color, conf.separate, conf.separator);
             }
         case "list":
             return wait(spawnProcess([yay, "-Q"]));
@@ -150,13 +200,12 @@ int main(string[] args) {
             return wait(spawnProcess([yay, "-Su"] ~ ops));
         case "clean":
             return wait(spawnProcess([yay, "-Yc"]));
-        default:
-            if (conf.custom.canFind(args[1])) {
-                ulong argspos = conf.custom.countUntil(args[1]);
-                return wait(spawnProcess([yay] ~ conf.args[argspos] ~ ops));
-            } else {
-                writefln("Unknown command \"%s\". Executing as is.", args[1]);
-                return wait(spawnProcess([yay] ~ ops));
-            }
+        default: 
+            writelncol(
+                FG.ltyellow, true, 
+                "Warning: unknown command \"" ~ args[1] ~ "\". Executing as is.\033[m"
+                );
+
+            return wait(spawnProcess([yay] ~ ops));
     }
 }
