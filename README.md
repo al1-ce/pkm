@@ -229,6 +229,7 @@ custom:
     vote: -Wv
     unvote: -Wu
     sysupdate: pacman -Syu
+    find: -Qs
 alias:
     i: install
     s: search
@@ -236,6 +237,7 @@ alias:
     b: pkgbuild
     u: updupg
     I: info
+    f: find
 separate: yes
 separator: "\u2500"
 separator-color: "\e[38;5;237m"
