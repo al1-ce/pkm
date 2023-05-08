@@ -27,7 +27,7 @@ private auto reg = regex(
         r"(?:\s\((Orphaned)\))?(?:\s\(Out-of-date:\s(.*?)\))?" ~ 
         r"(?:\s\((Installed)(?:\:\s(.*?))?\))?(?:\s{6}|\s{5})(.*)(?:\r|\n|\z)", "gm");
 
-int search(string yay, string[] terms, SearchConfig conf) {
+int search(string yay, string[] terms, SearchConfig conf, bool noAur) {
     // string yay = "/usr/bin/yay";
     string tmpFile = tempDir ~ "/" ~ "pkm-yay-search-output.txt";
     tmpFile = tmpFile.fixPath;
@@ -44,7 +44,7 @@ int search(string yay, string[] terms, SearchConfig conf) {
         return pidErr;
     }
 
-    printPackages(tmpFile, terms, conf);
+    printPackages(tmpFile, terms, conf, noAur);
 
     remove(tmpFile);
     
@@ -56,7 +56,7 @@ int search(string yay, string[] terms, SearchConfig conf) {
 // repo/name version (size|aur-votes) [group]? (orphaned) 
 //  7           8           9             10   
 // (outofdate) (installed: (version)) \n (description)
-void printPackages(string tmpFile, string[] searchTerms, SearchConfig conf) {
+void printPackages(string tmpFile, string[] searchTerms, SearchConfig conf, bool noAur) {
     string contents = readText(tmpFile);
 
     Pkg[] pkgs = [];
@@ -68,13 +68,14 @@ void printPackages(string tmpFile, string[] searchTerms, SearchConfig conf) {
         if (pkg.length != 11) {
             
             writelncol(FG.ltred, true, "Error: search regex is not compatible with chosen package manager.");
-            goto noprint;
+            return;
         }
 
         string pkgsize;
         string inssize;
 
         if (pkg[1] == "aur") {
+            if (noAur) continue;
             string[] _size = pkg[4].split(' ');
             pkgsize = _size[0];
             inssize = _size[1];
@@ -116,8 +117,6 @@ void printPackages(string tmpFile, string[] searchTerms, SearchConfig conf) {
         printPackage(pkg, conf.color);
         if (!print_) print_ = true;
     }
-
-    noprint:
 }
 
 void printPackage(Pkg pkg, bool color) {

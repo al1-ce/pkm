@@ -34,7 +34,7 @@ import sily.path: fixPath;
 // stats | yay -Ps
 // pkgbuild | yay -G term | yay -Gp term
 
-private const string _version = "pkm v1.1.4";
+private const string _version = "pkm v1.2.1";
 
 int main(string[] args) {
     version (Windows) {
@@ -45,12 +45,14 @@ int main(string[] args) {
 
     bool optVersion = false;
     bool optAur = false;
+    bool optNoAur = false;
 
     auto help = getopt(
         args,
-        config.bundling, config.passThrough,
+        config.bundling, config.passThrough, config.caseSensitive,
         "version", "print version", &optVersion,
-        "aur|a", "search only aur", &optAur
+        "aur|a", "search only aur (yay --aur)", &optAur,
+        "noaur|A", "search only official (only custom search)", &optNoAur
     );
 
     string[] configPath = [
@@ -110,7 +112,7 @@ int main(string[] args) {
             printGetopt("pkm <operation> [...]", 
                 "Options", help.options, "Commands", commands
             );
-        }
+        } 
         return 0;
     }
 
@@ -179,7 +181,7 @@ int main(string[] args) {
             if (conf.yaysearch) {
                 return wait(spawnProcess([yay, "-Ss"] ~ ops));
             } else {
-                return search(yay, ops, conf);
+                return search(yay, ops, conf, optNoAur);
             }
         case "list":
             return wait(spawnProcess([yay, "-Q"]));
